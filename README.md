@@ -1,6 +1,5 @@
 # Integrantes:
 
-- Vicente Mediano Larenas
 - Daniel Miranda
 - Nikolai Navea
 - Vicente Arratia
