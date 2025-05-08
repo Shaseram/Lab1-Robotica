@@ -77,4 +77,8 @@ Al finalizar las demostraciones, el robot puede reiniciar el ciclo o detenerse. 
 
 # Códigos utilizados
 
+- mov.ino -> Código encargado de control de motores y velocidad.
+- hcsr04.ino -> Código que prueba el sensor hcsr04 y su capacidad de detección.
+- ecuacioncinematicaposicion.ino -> Código encargado de estimar posición del robot, aplicando la ecuación de cinemática.
+- correcionimu.ino -> Este código lleva a cabo la correción automática de trayectoria, midiendo indicadores mediante el sensor IMU.
 
