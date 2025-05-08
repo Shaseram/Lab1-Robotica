@@ -1,10 +1,7 @@
-#include <MPU9250_asukiaaa.h> // Para MPU6050/MPU9250 Accel/Gyro
+#include <MPU9250_asukiaaa.h>
 #include <Wire.h>
-#include <math.h> // Para M_PI, cos, sin, atan2, sqrt
+#include <math.h>
 
-// === 1. DEFINICIONES Y VARIABLES GLOBALES ===
-
-// --- Pines de Motores (AJUSTA ESTOS SEGÚN TU ROBOT) ---
 const int motorA_IN1 = 4;
 const int motorA_IN2 = 5;
 const int motorA_ENA = 6;
@@ -12,13 +9,11 @@ const int motorB_IN3 = 7;
 const int motorB_IN4 = 8;
 const int motorB_ENB = 9;
 
-// --- Parámetros del Robot (NECESITAS CALIBRARLOS EXPERIMENTALMENTE) ---
 const float WHEEL_BASE = 0.15;
 const float WHEEL_DIAMETER = 0.065;
 const float WHEEL_CIRCUMFERENCE = M_PI * WHEEL_DIAMETER;
-const float PWM_TO_SPEED_FACTOR = 0.0020; // ¡ESTIMA O CALIBRA ESTO!
+const float PWM_TO_SPEED_FACTOR = 0.0020;
 
-// --- IMU ---
 MPU9250_asukiaaa mpu;
 float gyroBiasX = 0, gyroBiasY = 0, gyroBiasZ = 0;
 const int CALIBRATION_SAMPLES = 1000;
@@ -26,27 +21,21 @@ float currentRoll = 0, currentPitch = 0, currentYaw = 0;
 float currentYawRate = 0;
 const float K_COMP = 0.98;
 
-// --- Odometría ---
 float robotX = 0.0;
 float robotY = 0.0;
 float robotTheta = 0.0;
 
-// --- Temporización ---
 unsigned long tiempoPrevioLoop = 0;
 unsigned long tiempoPrevioIMU = 0;
-// unsigned long tiempoPrevioOdom = 0; // No se usa directamente así, dt_loop se usa para odom
 
-// --- Parámetros de Control ---
 float targetYaw = 0.0;
-const float KP_YAW = 2.5; // Ganancia para corrección de Yaw
+const float KP_YAW = 2.5;
 
-// --- Parámetros de Control ADICIONALES (para corrección de Inclinación) ---
-const float KP_PITCH_POWER = 1.5;  // Ganancia para ajuste de potencia por Pitch - ¡NECESITA TUNING!
-const float KP_ROLL_STEER = 1.0;   // Ganancia para corrección de dirección por Roll - ¡NECESITA TUNING!
-const float MAX_PITCH_FOR_ADJUST = 20.0; // Grados, Pitch máx para aplicar ajuste de potencia
-const float MAX_ROLL_FOR_STEER = 15.0;   // Grados, Roll máx para aplicar ajuste de dirección
+const float KP_PITCH_POWER = 1.5;
+const float KP_ROLL_STEER = 1.0;
+const float MAX_PITCH_FOR_ADJUST = 20.0;
+const float MAX_ROLL_FOR_STEER = 15.0;
 
-// === 2. SETUP ===
 void setup() {
   Serial.begin(115200);
   Wire.begin();
@@ -77,7 +66,6 @@ void setup() {
   Serial.println("Setup completo. Iniciando demostraciones...");
 }
 
-// === 3. CALIBRACIÓN DEL GIROSCOPIO ===
 void calibrateGyroscope() {
   Serial.println("Calibrando Giroscopio... No mover el sensor.");
   long sumX = 0, sumY = 0, sumZ = 0;
@@ -96,7 +84,6 @@ void calibrateGyroscope() {
   Serial.print(" | Z: "); Serial.println(gyroBiasZ, 4);
 }
 
-// === 4. LECTURA Y PROCESAMIENTO DEL IMU ===
 void updateIMU(float dt_imu) {
   if (mpu.accelUpdate() != 0 || mpu.gyroUpdate() != 0) {
     Serial.println("Error al leer IMU en updateIMU");
@@ -117,16 +104,15 @@ void updateIMU(float dt_imu) {
   currentYaw += gyroDeltaYaw;
 }
 
-// === 5. CONTROL DE MOTORES ===
 void setMotor(int motor, int direccion, int pwm) {
   byte pinIn1, pinIn2, pinEna;
   bool logicaAdelanteEsHighLow;
   if (motor == 0) {
     pinIn1 = motorA_IN1; pinIn2 = motorA_IN2; pinEna = motorA_ENA;
-    logicaAdelanteEsHighLow = true; // ASUMO: Motor Izq, HIGH/LOW = adelante robot
+    logicaAdelanteEsHighLow = true;
   } else {
     pinIn1 = motorB_IN3; pinIn2 = motorB_IN4; pinEna = motorB_ENB;
-    logicaAdelanteEsHighLow = false; // ASUMO: Motor Der, LOW/HIGH = adelante robot
+    logicaAdelanteEsHighLow = false;
   }
   if (direccion == 1) {
     digitalWrite(pinIn1, logicaAdelanteEsHighLow ? HIGH : LOW);
@@ -137,7 +123,7 @@ void setMotor(int motor, int direccion, int pwm) {
   } else {
     digitalWrite(pinIn1, LOW); digitalWrite(pinIn2, LOW);
   }
-  analogWrite(pinEna, pwm); // PWM siempre positivo, dirección controla pines IN
+  analogWrite(pinEna, pwm);
 }
 
 void moveRobotPWM(int pwmLeft, int pwmRight) {
@@ -149,10 +135,7 @@ void stopRobot() {
   setMotor(0, 0, 0); setMotor(1, 0, 0);
 }
 
-// === 6. CINEMÁTICA (ODOMETRÍA) ===
 void updateOdometry(int pwmLeft, int pwmRight, float dt_odom) {
-  // Convertir PWM a velocidad lineal de rueda (m/s)
-  // Necesitamos la velocidad real con signo para el cálculo de omega
   float speedLeft_signed = pwmLeft * PWM_TO_SPEED_FACTOR;
   float speedRight_signed = pwmRight * PWM_TO_SPEED_FACTOR;
 
@@ -167,7 +150,6 @@ void updateOdometry(int pwmLeft, int pwmRight, float dt_odom) {
   robotTheta += delta_theta;
 }
 
-// === 7. LOOP PRINCIPAL (DEMOSTRACIONES) ===
 int demoState = 0;
 unsigned long demoStartTime = 0;
 
@@ -178,14 +160,14 @@ void loop() {
 
   if (currentTime - tiempoPrevioIMU >= 10) {
     float dt_imu_actual = (currentTime - tiempoPrevioIMU) / 1000.0;
-    if (dt_imu_actual > 0) { // Evitar dt = 0 si el loop es muy rápido
+    if (dt_imu_actual > 0) {
         updateIMU(dt_imu_actual);
     }
     tiempoPrevioIMU = currentTime;
   }
 
   switch (demoState) {
-    case 0: // Tarea 4: PWM Speed Control sin IMU
+    case 0:
       Serial.println("\n--- Demo: Control Velocidad PWM (sin IMU) ---");
       Serial.println("Adelante LENTO (PWM 120) por 2s...");
       moveRobotPWM(120, 120);
@@ -217,7 +199,7 @@ void loop() {
       }
       break;
 
-    case 3: // Tarea 2 y 3: Mover en línea recta con IMU (registrar y corregir Yaw e Inclinación)
+    case 3:
       Serial.println("\n--- Demo: Linea Recta con Correccion IMU (Yaw, Pitch, Roll) ---");
       Serial.print("Target Yaw: "); Serial.println(targetYaw);
       Serial.println("Moviendo por 5 segundos...");
@@ -230,54 +212,34 @@ void loop() {
         float baseSpeedPWM_original = 150;
         float adjustedBaseSpeedPWM = baseSpeedPWM_original;
 
-        // --- Corrección Activa por Pitch (Ajuste de Potencia) ---
         if (abs(currentPitch) < MAX_PITCH_FOR_ADJUST) {
-          // Si pitch es positivo (nariz arriba, subiendo), currentPitch es positivo.
-          // Queremos AUMENTAR potencia. KP_PITCH_POWER debe ser positivo.
           float pitch_power_adj = KP_PITCH_POWER * currentPitch;
           adjustedBaseSpeedPWM += pitch_power_adj;
-          adjustedBaseSpeedPWM = constrain(adjustedBaseSpeedPWM, 70, 250); // Limitar potencia ajustada
+          adjustedBaseSpeedPWM = constrain(adjustedBaseSpeedPWM, 70, 250);
         } else {
           Serial.print("Pitch ("); Serial.print(currentPitch); Serial.print("deg) EXTREMO. Usando vel. base o considerar detener.");
-          // Podrías detener el robot aquí por seguridad si el pitch es demasiado.
         }
 
-        // --- Corrección de Dirección por Yaw ---
         float yawError = targetYaw - currentYaw;
-        // Normalizar error de Yaw para el camino más corto (opcional pero robusto)
-        // while (yawError > 180.0) yawError -= 360.0;
-        // while (yawError < -180.0) yawError += 360.0;
         float yaw_correction = KP_YAW * yawError;
 
-        // --- Corrección de Dirección por Roll ---
         float roll_steering_adj = 0.0;
         if (abs(currentRoll) < MAX_ROLL_FOR_STEER) {
-          // Asumamos: Roll positivo = robot inclinado hacia la DERECHA.
-          // Para compensar, queremos girar ligeramente a la IZQUIERDA.
-          // Girar a la izquierda: Rueda Izq (-) , Rueda Der (+).
-          // Entonces, si currentRoll es positivo, roll_steering_adj debe ser positivo
-          // para que reste de pwmLeft y sume a pwmRight (según la fórmula de abajo).
           roll_steering_adj = KP_ROLL_STEER * currentRoll;
         } else {
           Serial.print("Roll ("); Serial.print(currentRoll); Serial.print("deg) EXTREMO. Sin corrección roll-steer.");
         }
         
-        // Aplicar correcciones a los PWM de los motores
-        // PWM_Left  = BaseAjustada + CorreccionYaw (si error yaw<0, gira izq) - CorreccionRoll (si roll>0, gira izq)
-        // PWM_Right = BaseAjustada - CorreccionYaw (si error yaw<0, gira izq) + CorreccionRoll (si roll>0, gira izq)
         int pwmLeft  = round(adjustedBaseSpeedPWM + yaw_correction - roll_steering_adj);
         int pwmRight = round(adjustedBaseSpeedPWM - yaw_correction + roll_steering_adj);
         
-        // Asegurar que los valores de PWM estén en rango y moveRobotPWM maneje signo
-        pwmLeft  = constrain(pwmLeft, -255, 255); // moveRobotPWM ya maneja signo para dirección
+        pwmLeft  = constrain(pwmLeft, -255, 255);
         pwmRight = constrain(pwmRight, -255, 255);
 
         moveRobotPWM(pwmLeft, pwmRight);
-        // Usar los PWM reales enviados a los motores (después de constrain) para la odometría
-        // Pero la función updateOdometry ya toma los pwmLeft/Right y calcula su signo
         updateOdometry(pwmLeft, pwmRight, dt_loop);
 
-        if ((currentTime - demoStartTime) % 750 < 20 && dt_loop > 0) { // Imprimir cada ~750ms
+        if ((currentTime - demoStartTime) % 750 < 20 && dt_loop > 0) {
           Serial.print("T:"); Serial.print((currentTime-demoStartTime)/1000.0,1);
           Serial.print(" YAW:"); Serial.print(currentYaw,1);
           Serial.print(" R:"); Serial.print(currentRoll,1);
@@ -287,10 +249,10 @@ void loop() {
           Serial.print(" Rc:"); Serial.print(roll_steering_adj,0);
           Serial.print(" Lpwm:"); Serial.print(pwmLeft);
           Serial.print(" Rpwm:"); Serial.println(pwmRight);
-          Serial.print("  Odom:X=");Serial.print(robotX,2);Serial.print(" Y=");Serial.print(robotY,2);Serial.print(" Th=");Serial.println(robotTheta*180.0/M_PI,1);
+          Serial.print("   Odom:X=");Serial.print(robotX,2);Serial.print(" Y=");Serial.print(robotY,2);Serial.print(" Th=");Serial.println(robotTheta*180.0/M_PI,1);
         }
 
-        if (currentTime - demoStartTime >= 5000) { // Mover por 5 segundos
+        if (currentTime - demoStartTime >= 5000) {
           stopRobot();
           Serial.println("DETENIDO - Fin prueba linea recta con correccion IMU.");
           Serial.print("Odometria final: X="); Serial.print(robotX); Serial.print(" Y="); Serial.print(robotY); Serial.print(" Theta="); Serial.println(robotTheta * 180.0/M_PI);
@@ -300,11 +262,11 @@ void loop() {
       }
       break;
 
-    case 99: // Fin
+    case 99:
       Serial.println("--- Demostraciones Completadas ---");
       delay(10000);
       demoState = 0;
-      robotX=0; robotY=0; robotTheta=0; currentYaw=0; targetYaw=0; currentRoll=0; currentPitch=0; // Reset
+      robotX=0; robotY=0; robotTheta=0; currentYaw=0; targetYaw=0; currentRoll=0; currentPitch=0;
       break;
   }
 }
