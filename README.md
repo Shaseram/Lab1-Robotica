@@ -8,7 +8,7 @@
 
 # Descripción del Proyecto
 
-El Laboratorio 1 consiste en construir un robot móvil básico con Arduino, controlar sus motores DC usando un driver L298N, e integrar un sensor MPU6500/9250. Las tareas clave incluyen conectar y programar estos componentes, calibrar el sensor MPU para corregir errores en las lecturas del acelerómetro y giroscopio, y aplicar filtros (como el de Kalman) para obtener una estimación de orientación más precisa. Finalmente, se utiliza esta información de orientación para implementar un control básico del robot, por ejemplo, reaccionando a la inclinación.
+El Laboratorio 1 consiste en construir un robot móvil básico con Arduino y controlar sus motores DC con un driver L298N, e integrar sensores como IMU MPU 6050 (para ajustar la dirección y corregir la inclinación) y el HC-SR04 (capaz de medir distancias mediante ultrasonidos). La idea es lograr que los sensores funcionen conjuntamente con el robot.
 
 # Solución Laboratorio 1
 
