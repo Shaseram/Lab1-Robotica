@@ -21,10 +21,6 @@ https://github.com/user-attachments/assets/fa5c1360-0b9e-49dc-8e75-e3a2013125ac
 
 https://github.com/user-attachments/assets/34038446-59d4-4df3-b032-a5db0761b406
 
-### Control de velocidad
-
-???????????????????????????
-
 ### Verificación funcionamiento HC-SR04
 
 https://github.com/user-attachments/assets/8063e1f8-1b50-4685-a3ae-ef028e34a567
@@ -49,7 +45,18 @@ https://github.com/user-attachments/assets/8063e1f8-1b50-4685-a3ae-ef028e34a567
 
 ### Cinemática y control de velocidad con IMU
 
-### Inclinación y correción en tiempo real con IMU
+https://github.com/user-attachments/assets/8dc72620-d1e6-43b8-b6cb-7b2388619520
+
+### Inclinación y correción
+
+https://github.com/user-attachments/assets/fb3cbc53-2150-4890-9038-8b441d721276
+
+Este código transforma un robot móvil básico en un sistema más inteligente y consciente de su entorno y estado. Su objetivo principal es permitir que el robot no solo ejecute movimientos comandados, sino que también estime su posición, perciba su orientación e inclinación, y utilice esta información para corregir activamente su trayectoria en tiempo real.
+
+Fase de Preparación y Calibración:
+Al encenderse, el robot inicia una fase crucial de preparación. Primero, configura todos los sistemas de control para sus motores y establece la comunicación con la Unidad de Medición Inercial (IMU, el sensor MPU6050/MPU9250). Un paso fundamental en esta etapa es la calibración del giroscopio. Durante este proceso, el robot debe permanecer completamente inmóvil sobre una superficie estable. El sistema toma cientos de lecturas del giroscopio para calcular y registrar cualquier error inherente o "bias" que el sensor pueda tener en reposo. Esta calibración es vital, ya que anular este bias permite que las mediciones posteriores de la velocidad de giro sean mucho más precisas, lo que es esencial para una navegación y corrección de trayectoria efectivas.
+
+Al finalizar las demostraciones, el robot puede reiniciar el ciclo o detenerse. En esencia, este código dota al robot de la capacidad de percibir su propio estado de movimiento y orientación, y de reaccionar para intentar cumplir de manera más precisa y estable los objetivos de navegación, sentando las bases para comportamientos autónomos más complejos.
 
 ### Preguntas Parte 2
 
@@ -69,3 +76,5 @@ https://github.com/user-attachments/assets/8063e1f8-1b50-4685-a3ae-ef028e34a567
         - Para el Giro (Yaw): El IMU (giroscopio) detecta la velocidad angular o el cambio de ángulo. Si el robot se desvía del rumbo deseado, el controlador (Arduino) ajusta la velocidad de los motores de forma diferencial para corregir la trayectoria y mantener el rumbo.
 
 # Códigos utilizados
+
+
